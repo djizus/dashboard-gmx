@@ -1,0 +1,9 @@
+# Ignore files for Vercel deployment
+.env
+.env.local
+node_modules
+.git
+.gitignore
+README.md
+.vscode
+dist

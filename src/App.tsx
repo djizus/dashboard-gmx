@@ -7,6 +7,7 @@ import { PerformanceMetrics } from './components/PerformanceMetrics';
 import { PositionsTable } from './components/PositionsTable';
 import { TradingHistory } from './components/TradingHistory';
 import { PnLChart } from './components/PnLChart';
+import { AgentThoughts } from './components/AgentThoughts';
 import vegaLogo from './assets/vega_logo.jpg';
 import zkorpLogo from './assets/zkorp_logo.png';
 import daydreamsLogo from './assets/Daydreams.png';
@@ -143,6 +144,11 @@ function App() {
             {/* Active Positions - Full Width */}
             <div className="mb-8">
               <PositionsTable />
+            </div>
+            
+            {/* Agent Thoughts - Full Width */}
+            <div className="mb-8">
+              <AgentThoughts />
             </div>
             
             {/* Two Column Layout */}
