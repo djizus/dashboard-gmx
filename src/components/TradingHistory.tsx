@@ -128,10 +128,13 @@ export const TradingHistory: React.FC = () => {
           <div className="text-center">
             <div className="text-xs text-gray-500 dark:text-gray-400">Avg Size</div>
             <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {formatCurrency(
-                filteredAndSortedTrades.reduce((sum, t) => sum + (t.sizeDeltaUsd || 0), 0) / 
-                Math.max(filteredAndSortedTrades.length, 1)
-              )}
+              {(() => {
+                const executedTrades = filteredAndSortedTrades.filter(t => t.eventName === 'OrderExecuted');
+                return formatCurrency(
+                  executedTrades.reduce((sum, t) => sum + (t.sizeDeltaUsd || 0), 0) / 
+                  Math.max(executedTrades.length, 1)
+                );
+              })()}
             </div>
           </div>
           <div className="text-center">
