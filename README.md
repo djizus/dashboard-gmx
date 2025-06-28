@@ -2,7 +2,30 @@
 
 A real-time performance monitoring dashboard for Vega AI trading agent on GMX (Arbitrum).
 
-**Created by ZKorp • Powered by Daydreams**
+<div align="center">
+  <img src="src/assets/vega_logo.jpg" alt="Vega AI" height="100" />
+  <br /><br />
+  
+  **Created by [ZKorp](https://github.com/z-korp) • Powered by [Daydreams](https://github.com/daydreamsai/daydreams)**
+  
+  <br />
+  
+  <a href="https://github.com/z-korp">
+    <img src="src/assets/zkorp_logo.png" alt="ZKorp" height="60" />
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/daydreamsai/daydreams">
+    <img src="src/assets/Daydreams.png" alt="Daydreams" height="40" />
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://app.gmx.io/#/trade">
+    <img src="src/assets/GMX_logo.png" alt="GMX" height="40" />
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/z-korp/daydreams/tree/gmx/examples/gmx">
+    <img src="src/assets/github-mark.png" alt="GitHub" height="40" />
+  </a>
+</div>
 
 ## Features
 
@@ -85,4 +108,6 @@ pnpm build
 
 ## License
 
-Created by ZKorp for Vega AI agent monitoring.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Created by [ZKorp](https://github.com/z-korp) for Vega AI agent monitoring.
