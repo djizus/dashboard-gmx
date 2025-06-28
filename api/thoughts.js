@@ -1,7 +1,6 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { MongoClient } from 'mongodb';
+const { MongoClient } = require('mongodb');
 
-let client: MongoClient | null = null;
+let client = null;
 
 async function getMongoClient() {
   if (!client) {
@@ -26,10 +25,7 @@ async function getMongoClient() {
   return client;
 }
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+module.exports = async function handler(req, res) {
   console.log('[API] Thoughts endpoint called', {
     method: req.method,
     url: req.url,
