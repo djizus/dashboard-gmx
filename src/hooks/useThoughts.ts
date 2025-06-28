@@ -48,7 +48,8 @@ export const useThoughts = () => {
         } catch (parseError) {
           console.error('[Thoughts] JSON parse error:', parseError);
           console.error('[Thoughts] Failed to parse:', text);
-          throw new Error(`Invalid JSON response: ${parseError.message}`);
+          const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parse error';
+          throw new Error(`Invalid JSON response: ${errorMessage}`);
         }
         
         if (!response.ok) {
@@ -60,7 +61,9 @@ export const useThoughts = () => {
         return data;
       } catch (error) {
         console.error('[Thoughts] Fetch error:', error);
-        console.error('[Thoughts] Error stack:', error.stack);
+        if (error instanceof Error) {
+          console.error('[Thoughts] Error stack:', error.stack);
+        }
         throw error;
       }
     },
