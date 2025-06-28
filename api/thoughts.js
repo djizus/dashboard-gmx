@@ -57,18 +57,18 @@ module.exports = async function handler(req, res) {
     
     console.log('[API] Querying for documents with thoughts...');
     // Find documents with thoughts array that is not empty
-    // Using dot notation to check if at least one thought exists
+    // Using dot notation to check if at least one thought exists in value.thoughts
     const document = await collection.findOne({ 
-      'thoughts.0': { $exists: true }
+      'value.thoughts.0': { $exists: true }
     });
     
     console.log('[API] Query result:', {
       found: !!document,
-      hasThoughts: !!document?.thoughts,
-      thoughtsCount: document?.thoughts?.length || 0
+      hasThoughts: !!document?.value?.thoughts,
+      thoughtsCount: document?.value?.thoughts?.length || 0
     });
     
-    if (!document || !document.thoughts) {
+    if (!document || !document.value || !document.value.thoughts) {
       console.log('[API] No thoughts found, returning 404');
       return res.status(404).json({ error: 'No thoughts found' });
     }
@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
     console.log('[API] Returning thoughts successfully');
     // Return the thoughts array
     return res.status(200).json({ 
-      thoughts: document.thoughts,
+      thoughts: document.value.thoughts,
       lastUpdated: document.updatedAt || new Date().toISOString()
     });
   } catch (error) {
