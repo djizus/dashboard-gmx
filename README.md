@@ -13,17 +13,13 @@ A real-time performance monitoring dashboard for Vega AI trading agent on GMX (A
   <a href="https://github.com/z-korp">
     <img src="src/assets/zkorp_logo.png" alt="ZKorp" height="60" />
   </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
+  
   <a href="https://github.com/daydreamsai/daydreams">
     <img src="src/assets/Daydreams.png" alt="Daydreams" height="40" />
   </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
+  
   <a href="https://app.gmx.io/#/trade">
     <img src="src/assets/GMX_logo.png" alt="GMX" height="40" />
-  </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/z-korp/daydreams/tree/gmx/examples/gmx">
-    <img src="src/assets/github-mark.png" alt="GitHub" height="40" />
   </a>
 </div>
 
