@@ -21,20 +21,12 @@ export class GmxService {
 
     if (this.walletAddress) {
       this.sdk.setAccount(this.walletAddress as `0x${string}`);
-      console.log(`💼 GMX SDK initialized with account: ${this.walletAddress}`);
     }
   }
 
   async getMarketsInfo() {
     try {
       const result = await this.sdk.markets.getMarketsInfo();
-      console.log('Markets info result structure:', {
-        hasMarketsInfoData: !!result.marketsInfoData,
-        hasTokensData: !!result.tokensData,
-        marketsCount: Object.keys(result.marketsInfoData || {}).length,
-        tokensCount: Object.keys(result.tokensData || {}).length
-      });
-
       return {
         markets: result.marketsInfoData || {},
         tokens: result.tokensData || {}
@@ -48,19 +40,11 @@ export class GmxService {
   async getPositions() {
     try {
       if (!this.walletAddress) {
-        console.warn('No wallet address configured');
         return [];
       }
 
-      console.log('🔍 Fetching positions for wallet:', this.walletAddress);
-      console.log('📋 Available position methods:', Object.getOwnPropertyNames(this.sdk.positions));
-
-      // First get markets and tokens data
+      // Always get fresh markets and tokens data for live prices
       const marketsResult = await this.getMarketsInfo();
-      
-      // Try to get positions with account parameter
-      console.log('📊 Available markets:', Object.keys(marketsResult.markets).length);
-      console.log('🪙 Available tokens:', Object.keys(marketsResult.tokens).length);
       
       const positionsResult = await this.sdk.positions.getPositionsInfo({
         marketsInfoData: marketsResult.markets,
@@ -68,36 +52,40 @@ export class GmxService {
         showPnlInLeverage: false,
       });
 
-      console.log('Positions result:', positionsResult);
-      console.log('Positions result type:', typeof positionsResult);
-      console.log('Positions result keys:', Object.keys(positionsResult || {}));
-      console.log('Positions result values:', Object.values(positionsResult || {}));
-
       if (!positionsResult || Object.keys(positionsResult).length === 0) {
-        console.log('No positions found or empty result');
         return [];
       }
 
-      return Object.values(positionsResult).map((position: any) => ({
-        key: position.key,
-        marketAddress: position.marketAddress,
-        indexTokenAddress: position.indexTokenAddress,
-        collateralTokenAddress: position.collateralTokenAddress,
-        isLong: position.isLong,
-        sizeInUsd: position.sizeInUsd ? bigIntToDecimal(position.sizeInUsd, USD_DECIMALS) : 0,
-        sizeInTokens: position.sizeInTokens ? bigIntToDecimal(position.sizeInTokens, position.indexToken?.decimals || 18) : 0,
-        collateralAmount: position.collateralAmount ? bigIntToDecimal(position.collateralAmount, position.collateralToken?.decimals || 18) : 0,
-        collateralUsd: position.collateralUsd ? bigIntToDecimal(position.collateralUsd, USD_DECIMALS) : 0,
-        markPrice: position.markPrice ? bigIntToDecimal(position.markPrice, USD_DECIMALS) : 0,
-        entryPrice: position.entryPrice ? bigIntToDecimal(position.entryPrice, USD_DECIMALS) : 0,
-        unrealizedPnl: position.pnl ? bigIntToDecimal(position.pnl, USD_DECIMALS) : 0,
-        unrealizedPnlPercentage: position.pnlPercentage ? bigIntToDecimal(position.pnlPercentage, 4) : 0,
-        leverage: position.leverage ? bigIntToDecimal(position.leverage, 4) : 0,
-        liquidationPrice: position.liquidationPrice ? bigIntToDecimal(position.liquidationPrice, USD_DECIMALS) : 0,
-        marketInfo: position.marketInfo,
-        indexToken: position.indexToken,
-        collateralToken: position.collateralToken,
-      }));
+      // Map positions with fresh market data for live prices
+      return Object.values(positionsResult).map((position: any) => {
+        // Get fresh market price from marketsResult
+        const marketInfo = marketsResult.markets[position.marketAddress];
+        const indexToken = marketsResult.tokens[position.indexTokenAddress];
+        
+        // Use the latest index price from the market data
+        const currentMarkPrice = position.markPrice ? bigIntToDecimal(position.markPrice, USD_DECIMALS) : 0;
+
+        return {
+          key: position.key,
+          marketAddress: position.marketAddress,
+          indexTokenAddress: position.indexTokenAddress,
+          collateralTokenAddress: position.collateralTokenAddress,
+          isLong: position.isLong,
+          sizeInUsd: position.sizeInUsd ? bigIntToDecimal(position.sizeInUsd, USD_DECIMALS) : 0,
+          sizeInTokens: position.sizeInTokens ? bigIntToDecimal(position.sizeInTokens, position.indexToken?.decimals || 18) : 0,
+          collateralAmount: position.collateralAmount ? bigIntToDecimal(position.collateralAmount, position.collateralToken?.decimals || 18) : 0,
+          collateralUsd: position.collateralUsd ? bigIntToDecimal(position.collateralUsd, USD_DECIMALS) : 0,
+          markPrice: currentMarkPrice,
+          entryPrice: position.entryPrice ? bigIntToDecimal(position.entryPrice, USD_DECIMALS) : 0,
+          unrealizedPnl: position.pnl ? bigIntToDecimal(position.pnl, USD_DECIMALS) : 0,
+          unrealizedPnlPercentage: position.pnlPercentage ? bigIntToDecimal(position.pnlPercentage, 4) : 0,
+          leverage: position.leverage ? bigIntToDecimal(position.leverage, 4) : 0,
+          liquidationPrice: position.liquidationPrice ? bigIntToDecimal(position.liquidationPrice, USD_DECIMALS) : 0,
+          marketInfo: marketInfo,
+          indexToken: indexToken,
+          collateralToken: position.collateralToken,
+        };
+      });
     } catch (error) {
       console.error('Failed to fetch positions:', error);
       throw error;
@@ -156,7 +144,6 @@ export class GmxService {
   async getTradingHistory() {
     try {
       if (!this.walletAddress) {
-        console.warn('No wallet address configured');
         return [];
       }
 
@@ -171,21 +158,7 @@ export class GmxService {
         tokensData: marketsResult.tokens,
       });
 
-      console.log('Raw trading history from SDK:', history);
-      console.log('History length:', history.length);
-      if (history.length > 0) {
-        console.log('First trade sample:', history[0]);
-      }
-
-
       const processedTrades = history.map((trade: any) => {
-        console.log('Processing trade:', trade.id, {
-          pnlUsd: trade.pnlUsd,
-          basePnlUsd: trade.basePnlUsd,
-          sizeDeltaUsd: trade.sizeDeltaUsd,
-          executionPrice: trade.executionPrice
-        });
-
         return {
           id: trade.id || `${trade.transaction?.hash}-${Date.now()}`,
           txHash: trade.transaction?.hash,
@@ -213,7 +186,6 @@ export class GmxService {
         };
       });
 
-      console.log('Processed trades sample:', processedTrades[0]);
       return processedTrades;
     } catch (error) {
       console.error('Failed to fetch trading history:', error);

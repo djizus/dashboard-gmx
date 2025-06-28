@@ -9,8 +9,6 @@ export const TradingHistory: React.FC = () => {
   const { getFilterTimestamp, getFilterLabel } = useDateFilter();
 
   const filteredAndSortedTrades = useMemo(() => {
-    console.log('Raw trades data:', trades);
-    
     let filtered = [...trades];
     const filterTimestamp = getFilterTimestamp();
 

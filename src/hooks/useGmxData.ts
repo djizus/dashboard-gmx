@@ -16,8 +16,9 @@ export const usePositions = () => {
   return useQuery({
     queryKey: ['positions'],
     queryFn: () => gmxService.getPositions(),
-    refetchInterval: 15000, // Refetch every 15 seconds
-    staleTime: 10000, // Consider data stale after 10 seconds
+    refetchInterval: 5000, // Refetch every 5 seconds for live price updates
+    staleTime: 3000, // Consider data stale after 3 seconds
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 };
 
