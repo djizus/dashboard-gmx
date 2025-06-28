@@ -1,10 +1,10 @@
 # Vega AI Trading Dashboard
 
 <div align="center">
-  </br>
-  <h1>**Created by ZKorp • Powered by Daydreams**</h1>
-  </br></br></br>
   <img src="src/assets/vega_logo.jpg" alt="Vega AI" height="100" />
+  </br>
+  <h2>Created by ZKorp • Powered by Daydreams</h2>
+  </br></br></br>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="src/assets/zkorp_logo.png" alt="ZKorp" height="40" />
   &nbsp;&nbsp;&nbsp;&nbsp;
