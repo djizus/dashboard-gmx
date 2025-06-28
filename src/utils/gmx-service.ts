@@ -65,14 +65,30 @@ export class GmxService {
         // Use the latest index price from the market data
         const currentMarkPrice = position.markPrice ? bigIntToDecimal(position.markPrice, USD_DECIMALS) : 0;
 
-        // Debug position data structure - let's see what we actually have
-        console.log('Position debug:', {
-          positionIndexToken: position.indexToken?.symbol,
-          marketsIndexToken: indexToken?.symbol,
-          marketInfoName: marketInfo?.name,
-          marketAddress: position.marketAddress,
-          indexTokenAddress: position.indexTokenAddress
-        });
+        // Debug PnL calculation
+        const entryPrice = position.entryPrice ? bigIntToDecimal(position.entryPrice, USD_DECIMALS) : 0;
+        const sizeInUsd = position.sizeInUsd ? bigIntToDecimal(position.sizeInUsd, USD_DECIMALS) : 0;
+        const rawPnl = position.pnl ? bigIntToDecimal(position.pnl, USD_DECIMALS) : 0;
+        const rawPnlPercentage = position.pnlPercentage ? bigIntToDecimal(position.pnlPercentage, 4) : 0;
+        
+        // Manual PnL calculation - the SDK values seem to be incorrect/stale
+        let calculatedPnl = rawPnl;
+        let calculatedPnlPercentage = rawPnlPercentage;
+        
+        if (entryPrice > 0 && currentMarkPrice > 0 && sizeInUsd > 0) {
+          const priceChange = currentMarkPrice - entryPrice;
+          const priceChangePercentage = (priceChange / entryPrice) * 100;
+          
+          // For shorts, PnL is inverted (profit when price goes down)
+          const directionMultiplier = position.isLong ? 1 : -1;
+          const manualPnl = (priceChange / entryPrice) * sizeInUsd * directionMultiplier;
+          const manualPnlPercentage = priceChangePercentage * directionMultiplier;
+          
+          // Always use manual calculation since SDK values are clearly wrong
+          calculatedPnl = manualPnl;
+          calculatedPnlPercentage = manualPnlPercentage;
+        }
+        
 
         return {
           key: position.key,
@@ -80,14 +96,14 @@ export class GmxService {
           indexTokenAddress: position.indexTokenAddress,
           collateralTokenAddress: position.collateralTokenAddress,
           isLong: position.isLong,
-          sizeInUsd: position.sizeInUsd ? bigIntToDecimal(position.sizeInUsd, USD_DECIMALS) : 0,
+          sizeInUsd: sizeInUsd,
           sizeInTokens: position.sizeInTokens ? bigIntToDecimal(position.sizeInTokens, position.indexToken?.decimals || 18) : 0,
           collateralAmount: position.collateralAmount ? bigIntToDecimal(position.collateralAmount, position.collateralToken?.decimals || 18) : 0,
           collateralUsd: position.collateralUsd ? bigIntToDecimal(position.collateralUsd, USD_DECIMALS) : 0,
           markPrice: currentMarkPrice,
-          entryPrice: position.entryPrice ? bigIntToDecimal(position.entryPrice, USD_DECIMALS) : 0,
-          unrealizedPnl: position.pnl ? bigIntToDecimal(position.pnl, USD_DECIMALS) : 0,
-          unrealizedPnlPercentage: position.pnlPercentage ? bigIntToDecimal(position.pnlPercentage, 4) : 0,
+          entryPrice: entryPrice,
+          unrealizedPnl: calculatedPnl,
+          unrealizedPnlPercentage: calculatedPnlPercentage,
           leverage: position.leverage ? bigIntToDecimal(position.leverage, 4) : 0,
           liquidationPrice: position.liquidationPrice ? bigIntToDecimal(position.liquidationPrice, USD_DECIMALS) : 0,
           marketInfo: marketInfo,
