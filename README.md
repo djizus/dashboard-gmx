@@ -3,7 +3,7 @@
 <div align="center">
   <img src="src/assets/vega_logo.jpg" alt="Vega AI" height="100" />
   </br>
-  Created by **ZKorp** • Powered by **Daydreams**
+  Created by <b>ZKorp</b> • Powered by <b>Daydreams</b>
   </br></br>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="src/assets/zkorp_logo.png" alt="ZKorp" height="40" />
