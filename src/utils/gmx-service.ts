@@ -52,8 +52,15 @@ export class GmxService {
         return [];
       }
 
+      console.log('🔍 Fetching positions for wallet:', this.walletAddress);
+      console.log('📋 Available position methods:', Object.getOwnPropertyNames(this.sdk.positions));
+
       // First get markets and tokens data
       const marketsResult = await this.getMarketsInfo();
+      
+      // Try to get positions with account parameter
+      console.log('📊 Available markets:', Object.keys(marketsResult.markets).length);
+      console.log('🪙 Available tokens:', Object.keys(marketsResult.tokens).length);
       
       const positionsResult = await this.sdk.positions.getPositionsInfo({
         marketsInfoData: marketsResult.markets,
@@ -62,8 +69,12 @@ export class GmxService {
       });
 
       console.log('Positions result:', positionsResult);
+      console.log('Positions result type:', typeof positionsResult);
+      console.log('Positions result keys:', Object.keys(positionsResult || {}));
+      console.log('Positions result values:', Object.values(positionsResult || {}));
 
       if (!positionsResult || Object.keys(positionsResult).length === 0) {
+        console.log('No positions found or empty result');
         return [];
       }
 
