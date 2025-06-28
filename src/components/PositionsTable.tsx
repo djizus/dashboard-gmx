@@ -102,7 +102,7 @@ export const PositionsTable: React.FC = () => {
                 <tr key={position.key || index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {position.indexToken?.symbol || 'Unknown'}
+                      {position.indexToken?.symbol || position.indexToken?.name || position.marketInfo?.name || 'Unknown'}
                     </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">

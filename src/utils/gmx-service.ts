@@ -65,6 +65,15 @@ export class GmxService {
         // Use the latest index price from the market data
         const currentMarkPrice = position.markPrice ? bigIntToDecimal(position.markPrice, USD_DECIMALS) : 0;
 
+        // Debug position data structure - let's see what we actually have
+        console.log('Position debug:', {
+          positionIndexToken: position.indexToken?.symbol,
+          marketsIndexToken: indexToken?.symbol,
+          marketInfoName: marketInfo?.name,
+          marketAddress: position.marketAddress,
+          indexTokenAddress: position.indexTokenAddress
+        });
+
         return {
           key: position.key,
           marketAddress: position.marketAddress,
@@ -82,7 +91,7 @@ export class GmxService {
           leverage: position.leverage ? bigIntToDecimal(position.leverage, 4) : 0,
           liquidationPrice: position.liquidationPrice ? bigIntToDecimal(position.liquidationPrice, USD_DECIMALS) : 0,
           marketInfo: marketInfo,
-          indexToken: indexToken,
+          indexToken: position.indexToken || indexToken, // Prioritize position's indexToken
           collateralToken: position.collateralToken,
         };
       });
