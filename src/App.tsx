@@ -9,6 +9,7 @@ import { TradingHistory } from './components/TradingHistory';
 import { PnLChart } from './components/PnLChart';
 import { AgentThoughts } from './components/AgentThoughts';
 import { ThemeToggle } from './components/ThemeToggle';
+import { ModelUsage } from './components/ModelUsage';
 import vegaLogo from './assets/vega_logo.jpg';
 import zkorpLogo from './assets/zkorp_logo.png';
 import zkorpLogoWithBg from './assets/zkorp_with_bg.png';
@@ -127,9 +128,13 @@ function App() {
               <PositionsTable />
             </div>
             
-            {/* Agent Thoughts - Full Width */}
-            <div className="mb-8">
+            {/* Agent Thoughts and Model Usage - Two Column */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Agent Thoughts */}
               <AgentThoughts />
+              
+              {/* Model Usage */}
+              <ModelUsage />
             </div>
             
             {/* Two Column Layout */}
