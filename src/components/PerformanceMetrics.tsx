@@ -167,7 +167,7 @@ export const PerformanceMetrics: React.FC = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Vega AI Performance Metrics
+            Vega Agent Performance Metrics
           </h2>
           {getFilterTimestamp() !== null && (
             <div className="text-sm text-gray-600 dark:text-gray-400">

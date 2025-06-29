@@ -25,7 +25,20 @@ interface DateFilterProviderProps {
 }
 
 export const DateFilterProvider: React.FC<DateFilterProviderProps> = ({ children }) => {
-  const [dateFilter, setDateFilter] = useState<DateFilterValue>('1d');
+  const [dateFilter, setDateFilterState] = useState<DateFilterValue>(() => {
+    // Load saved filter from localStorage
+    const savedFilter = localStorage.getItem('dateFilter');
+    if (savedFilter && ['all', '1d', '7d', '30d'].includes(savedFilter)) {
+      return savedFilter as DateFilterValue;
+    }
+    return '1d'; // Default value
+  });
+
+  // Custom setter that also saves to localStorage
+  const setDateFilter = (filter: DateFilterValue) => {
+    setDateFilterState(filter);
+    localStorage.setItem('dateFilter', filter);
+  };
 
   const getFilterTimestamp = (): number | null => {
     if (dateFilter === 'all') return null;

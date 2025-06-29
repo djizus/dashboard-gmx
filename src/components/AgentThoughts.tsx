@@ -1,6 +1,7 @@
 import React from 'react';
-import { Brain, Clock, AlertCircle } from 'lucide-react';
+import { Clock, AlertCircle } from 'lucide-react';
 import { useThoughts } from '../hooks/useThoughts';
+import brainIcon from '../assets/brain_transparent_bg.png';
 
 export const AgentThoughts: React.FC = () => {
   const { data, isLoading, error } = useThoughts();
@@ -9,9 +10,9 @@ export const AgentThoughts: React.FC = () => {
     return (
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
         <div className="flex items-center mb-4">
-          <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400 mr-2" />
+          <img src={brainIcon} alt="Brain" className="h-6 w-6 mr-2" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Vega AI Thoughts
+            Vega Agent Thoughts
           </h3>
         </div>
         <div className="animate-pulse space-y-3">
@@ -27,9 +28,9 @@ export const AgentThoughts: React.FC = () => {
     return (
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
         <div className="flex items-center mb-4">
-          <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400 mr-2" />
+          <img src={brainIcon} alt="Brain" className="h-6 w-6 mr-2" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Vega AI Thoughts
+            Vega Agent Thoughts
           </h3>
         </div>
         <div className="space-y-2">
@@ -40,7 +41,6 @@ export const AgentThoughts: React.FC = () => {
           {error && (
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               <p>Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
-              <p className="mt-1">Check browser console for debugging information</p>
             </div>
           )}
         </div>
@@ -55,9 +55,9 @@ export const AgentThoughts: React.FC = () => {
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 h-full">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400 mr-2" />
+          <img src={brainIcon} alt="Brain" className="h-6 w-6 mr-2" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Vega AI Thoughts
+            Vega Agent Thoughts
           </h3>
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400">
