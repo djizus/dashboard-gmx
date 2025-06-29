@@ -76,7 +76,7 @@ export const PerformanceMetrics: React.FC = () => {
         averageLoss: 0,
         largestWin: 0,
         largestLoss: 0,
-        profitFactor: 0,
+        roi: 0,
       };
     }
 
@@ -93,7 +93,11 @@ export const PerformanceMetrics: React.FC = () => {
     const largestWin = winningTrades.length > 0 ? Math.max(...winningTrades.map(t => t.pnlUsd)) : 0;
     const largestLoss = losingTrades.length > 0 ? Math.min(...losingTrades.map(t => t.pnlUsd)) : 0;
     
-    const profitFactor = totalLoss > 0 ? totalProfit / totalLoss : totalProfit > 0 ? Infinity : 0;
+    // Calculate total invested amount (sum of all trade sizes)
+    const totalInvested = executedTrades.reduce((sum, trade) => sum + (trade.sizeDeltaUsd || 0), 0);
+    
+    // Calculate ROI as (Total PnL / Total Invested) * 100
+    const roi = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
 
     return {
       totalPnl,
@@ -105,7 +109,7 @@ export const PerformanceMetrics: React.FC = () => {
       averageLoss,
       largestWin,
       largestLoss,
-      profitFactor,
+      roi,
     };
   }, [trades, getFilterTimestamp]);
 
@@ -199,10 +203,10 @@ export const PerformanceMetrics: React.FC = () => {
           />
           
           <MetricCard
-            title="Profit Factor"
-            value={metrics.profitFactor === Infinity ? '∞' : metrics.profitFactor.toFixed(2)}
+            title="ROI"
+            value={formatPercentage(metrics.roi)}
             icon={<Percent className="h-6 w-6" />}
-            trend={metrics.profitFactor >= 1 ? 'up' : 'down'}
+            trend={metrics.roi >= 0 ? 'up' : 'down'}
           />
           
           <MetricCard
