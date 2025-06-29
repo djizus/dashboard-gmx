@@ -46,7 +46,7 @@ const MetricCard: React.FC<{
 
 export const PerformanceMetrics: React.FC = () => {
   const { data: trades = [], isLoading: tradesLoading, error: tradesError } = useTradingHistory();
-  const { getFilterTimestamp, getFilterLabel } = useDateFilter();
+  const { dateFilter, getFilterTimestamp, getFilterLabel } = useDateFilter();
 
   const filteredMetrics = useMemo(() => {
     if (!trades.length) return null;
@@ -111,7 +111,7 @@ export const PerformanceMetrics: React.FC = () => {
       largestLoss,
       roi,
     };
-  }, [trades, getFilterTimestamp]);
+  }, [trades, dateFilter, getFilterTimestamp]);
 
   const isLoading = tradesLoading;
   const error = tradesError;

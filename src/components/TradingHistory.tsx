@@ -6,7 +6,7 @@ import { useDateFilter } from '../contexts/DateFilterContext';
 
 export const TradingHistory: React.FC = () => {
   const { data: trades = [], isLoading, error } = useTradingHistory();
-  const { getFilterTimestamp, getFilterLabel } = useDateFilter();
+  const { dateFilter, getFilterTimestamp, getFilterLabel } = useDateFilter();
 
   const filteredAndSortedTrades = useMemo(() => {
     let filtered = [...trades];
@@ -18,7 +18,7 @@ export const TradingHistory: React.FC = () => {
     }
 
     return filtered.sort((a, b) => b.timestamp - a.timestamp);
-  }, [trades, getFilterTimestamp]);
+  }, [trades, dateFilter, getFilterTimestamp]);
 
   if (isLoading) {
     return (

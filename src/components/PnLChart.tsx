@@ -6,7 +6,7 @@ import { useDateFilter } from '../contexts/DateFilterContext';
 
 export const PnLChart: React.FC = () => {
   const { data: trades = [], isLoading, error } = useTradingHistory();
-  const { getFilterTimestamp, getFilterLabel } = useDateFilter();
+  const { dateFilter, getFilterTimestamp, getFilterLabel } = useDateFilter();
 
   const chartData = useMemo(() => {
     if (!trades.length) return [];
@@ -39,7 +39,7 @@ export const PnLChart: React.FC = () => {
         market: trade.indexToken?.symbol || 'Unknown',
       };
     });
-  }, [trades, getFilterTimestamp]);
+  }, [trades, dateFilter, getFilterTimestamp]);
 
   const formatCurrency = (value: number) => {
     if (typeof value !== 'number' || !isFinite(value)) {
