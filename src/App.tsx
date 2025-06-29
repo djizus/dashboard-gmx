@@ -1,6 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Activity, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { DateFilterProvider } from './contexts/DateFilterContext';
 import { GlobalDateFilter } from './components/GlobalDateFilter';
 import { PerformanceMetrics } from './components/PerformanceMetrics';
