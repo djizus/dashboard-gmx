@@ -54,13 +54,23 @@ export const PerformanceMetrics: React.FC = () => {
     let filteredTrades = [...trades];
     const filterTimestamp = getFilterTimestamp();
 
+    console.log('PerformanceMetrics Debug:', {
+      totalTrades: trades.length,
+      dateFilter,
+      filterTimestamp,
+      firstTradeTimestamp: trades[0]?.timestamp,
+      firstTradeDate: trades[0]?.timestamp ? new Date(trades[0].timestamp * 1000) : null,
+      filterDate: filterTimestamp ? new Date(filterTimestamp * 1000) : null
+    });
+
     if (filterTimestamp !== null) {
+      const beforeFilter = filteredTrades.length;
       filteredTrades = filteredTrades.filter(trade => trade.timestamp >= filterTimestamp);
+      console.log(`PerformanceMetrics date filter applied: ${beforeFilter} -> ${filteredTrades.length} trades`);
     }
 
-    // Calculate metrics from filtered trades
+    // Calculate metrics from filtered trades (data already contains only executed trades)
     const executedTrades = filteredTrades.filter(trade => 
-      trade.eventName === 'OrderExecuted' && 
       trade.pnlUsd !== undefined && 
       trade.pnlUsd !== 0
     );

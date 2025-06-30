@@ -14,13 +14,23 @@ export const PnLChart: React.FC = () => {
     let filteredTrades = [...trades];
     const filterTimestamp = getFilterTimestamp();
 
+    console.log('PnLChart Debug:', {
+      totalTrades: trades.length,
+      dateFilter,
+      filterTimestamp,
+      firstTradeTimestamp: trades[0]?.timestamp,
+      firstTradeDate: trades[0]?.timestamp ? new Date(trades[0].timestamp * 1000) : null,
+      filterDate: filterTimestamp ? new Date(filterTimestamp * 1000) : null
+    });
+
     if (filterTimestamp !== null) {
+      const beforeFilter = filteredTrades.length;
       filteredTrades = filteredTrades.filter(trade => trade.timestamp >= filterTimestamp);
+      console.log(`PnL Chart date filter applied: ${beforeFilter} -> ${filteredTrades.length} trades`);
     }
 
     const executedTrades = filteredTrades
       .filter(trade => 
-        trade.eventName === 'OrderExecuted' && 
         trade.pnlUsd !== undefined && 
         typeof trade.pnlUsd === 'number' && 
         isFinite(trade.pnlUsd)
@@ -30,10 +40,12 @@ export const PnLChart: React.FC = () => {
     let cumulativePnL = 0;
     return executedTrades.map((trade, index) => {
       cumulativePnL += trade.pnlUsd || 0;
+      const tradeDate = new Date(trade.timestamp * 1000);
       return {
         index: index + 1,
         timestamp: trade.timestamp,
-        date: format(new Date(trade.timestamp * 1000), 'MM/dd HH:mm'),
+        date: format(tradeDate, 'MM/dd HH:mm'),
+        shortDate: format(tradeDate, 'MM/dd'),
         pnl: trade.pnlUsd || 0,
         cumulativePnL: cumulativePnL,
         market: trade.indexToken?.symbol || 'Unknown',
@@ -58,7 +70,7 @@ export const PnLChart: React.FC = () => {
       const data = payload[0].payload;
       return (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
-          <p className="text-sm text-gray-600 dark:text-gray-400">{`Trade #${label}`}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{`Date: ${label}`}</p>
           <p className="text-sm text-gray-900 dark:text-white">{data.date}</p>
           <p className="text-sm text-gray-900 dark:text-white">{data.market}</p>
           <p className={`text-sm font-medium ${data.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -141,9 +153,12 @@ export const PnLChart: React.FC = () => {
           >
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
             <XAxis 
-              dataKey="index"
+              dataKey="shortDate"
               tick={{ fontSize: 12 }}
               tickLine={{ stroke: '#6b7280' }}
+              angle={-45}
+              textAnchor="end"
+              height={60}
             />
             <YAxis 
               tick={{ fontSize: 12 }}
@@ -166,7 +181,7 @@ export const PnLChart: React.FC = () => {
       
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Based on {chartData.length} executed trades
+          Based on {chartData.length} trades
         </p>
       </div>
     </div>

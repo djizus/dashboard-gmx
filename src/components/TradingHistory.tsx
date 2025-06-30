@@ -12,9 +12,22 @@ export const TradingHistory: React.FC = () => {
     let filtered = [...trades];
     const filterTimestamp = getFilterTimestamp();
 
+    console.log('TradingHistory Debug:', {
+      totalTrades: trades.length,
+      dateFilter,
+      filterTimestamp,
+      firstTradeTimestamp: trades[0]?.timestamp,
+      firstTradeDate: trades[0]?.timestamp ? new Date(trades[0].timestamp * 1000) : null,
+      filterDate: filterTimestamp ? new Date(filterTimestamp * 1000) : null
+    });
+
+    // Data already contains only executed trades from the service
+
     // Apply date filter
     if (filterTimestamp !== null) {
+      const beforeFilter = filtered.length;
       filtered = filtered.filter(trade => trade.timestamp >= filterTimestamp);
+      console.log(`Date filter applied: ${beforeFilter} -> ${filtered.length} trades`);
     }
 
     return filtered.sort((a, b) => b.timestamp - a.timestamp);
@@ -102,8 +115,8 @@ export const TradingHistory: React.FC = () => {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Trading History ({filteredAndSortedTrades.length} trades)
         </h3>
@@ -118,23 +131,20 @@ export const TradingHistory: React.FC = () => {
 
       {/* Quick Stats */}
       {filteredAndSortedTrades.length > 0 && (
-        <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded">
           <div className="text-center">
-            <div className="text-xs text-gray-500 dark:text-gray-400">Executed</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Total Trades</div>
             <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {filteredAndSortedTrades.filter(t => t.eventName === 'OrderExecuted').length}
+              {filteredAndSortedTrades.length}
             </div>
           </div>
           <div className="text-center">
             <div className="text-xs text-gray-500 dark:text-gray-400">Avg Size</div>
             <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {(() => {
-                const executedTrades = filteredAndSortedTrades.filter(t => t.eventName === 'OrderExecuted');
-                return formatCurrency(
-                  executedTrades.reduce((sum, t) => sum + (t.sizeDeltaUsd || 0), 0) / 
-                  Math.max(executedTrades.length, 1)
-                );
-              })()}
+              {formatCurrency(
+                filteredAndSortedTrades.reduce((sum, t) => sum + (t.sizeDeltaUsd || 0), 0) / 
+                Math.max(filteredAndSortedTrades.length, 1)
+              )}
             </div>
           </div>
           <div className="text-center">
@@ -150,26 +160,89 @@ export const TradingHistory: React.FC = () => {
         </div>
       )}
       
-      <div className="overflow-x-auto max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3 max-h-80 overflow-y-auto">
+        {displayedTrades.map((trade, index) => {
+          const pnlColor = trade.pnlUsd >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+          
+          return (
+            <div key={trade.id || index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center space-x-2">
+                  {getEventIcon(trade.eventName)}
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {trade.indexToken?.symbol || 'Unknown'}
+                    </div>
+                    <div className={`text-xs ${getEventColor(trade.eventName)}`}>
+                      {trade.isLong ? 'Long' : 'Short'}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {format(new Date(trade.timestamp * 1000), 'MM/dd HH:mm')}
+                  </div>
+                  {trade.txHash && (
+                    <a
+                      href={`https://arbiscan.io/tx/${trade.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Size</div>
+                  <div className="text-gray-900 dark:text-white">
+                    {trade.sizeDeltaUsd ? formatCurrency(trade.sizeDeltaUsd) : '-'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Price</div>
+                  <div className="text-gray-900 dark:text-white">
+                    {trade.executionPrice ? formatCurrency(trade.executionPrice) : 
+                     trade.triggerPrice ? formatCurrency(trade.triggerPrice) : '-'}
+                  </div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">PnL</div>
+                  <div className={`font-medium ${pnlColor}`}>
+                    {trade.pnlUsd !== 0 ? formatCurrency(trade.pnlUsd) : '-'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded">
         <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
           <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
             <tr>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Time
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Type
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Market
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Size
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Price
               </th>
-              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 PnL
               </th>
             </tr>
@@ -180,37 +253,37 @@ export const TradingHistory: React.FC = () => {
               
               return (
                 <tr key={trade.id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-2 py-3 whitespace-nowrap">
-                    <div className="text-xs text-gray-900 dark:text-white">
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {format(new Date(trade.timestamp * 1000), 'MM/dd HH:mm')}
                     </div>
                   </td>
-                  <td className="px-2 py-3 whitespace-nowrap">
-                    <div className={`text-xs font-medium ${getEventColor(trade.eventName)} flex items-center`}>
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <div className={`text-sm font-medium ${getEventColor(trade.eventName)} flex items-center`}>
                       {getEventIcon(trade.eventName)}
                       <span className="ml-1 truncate">
-                        {trade.isLong ? 'Long' : 'Short'} {trade.eventName}
+                        {trade.isLong ? 'Long' : 'Short'}
                       </span>
                     </div>
                   </td>
-                  <td className="px-2 py-3 whitespace-nowrap">
-                    <div className="text-xs text-gray-900 dark:text-white">
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {trade.indexToken?.symbol || 'Unknown'}
                     </div>
                   </td>
-                  <td className="px-2 py-3 whitespace-nowrap">
-                    <div className="text-xs text-gray-900 dark:text-white">
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {trade.sizeDeltaUsd ? formatCurrency(trade.sizeDeltaUsd) : '-'}
                     </div>
                   </td>
-                  <td className="px-2 py-3 whitespace-nowrap">
-                    <div className="text-xs text-gray-900 dark:text-white">
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-white">
                       {trade.executionPrice ? formatCurrency(trade.executionPrice) : 
                        trade.triggerPrice ? formatCurrency(trade.triggerPrice) : '-'}
                     </div>
                   </td>
-                  <td className="px-2 py-3 whitespace-nowrap">
-                    <div className={`text-xs font-medium ${pnlColor} flex items-center`}>
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <div className={`text-sm font-medium ${pnlColor} flex items-center`}>
                       {trade.pnlUsd !== 0 ? formatCurrency(trade.pnlUsd) : '-'}
                       {trade.txHash && (
                         <a
@@ -219,7 +292,7 @@ export const TradingHistory: React.FC = () => {
                           rel="noopener noreferrer"
                           className="ml-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                         >
-                          <ExternalLink className="h-3 w-3" />
+                          <ExternalLink className="h-4 w-4" />
                         </a>
                       )}
                     </div>

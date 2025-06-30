@@ -175,20 +175,64 @@ export class GmxService {
       // Get markets and tokens data first
       const marketsResult = await this.getMarketsInfo();
 
-      const history = await this.sdk.trades.getTradeHistory({
-        forAllAccounts: false,
-        pageSize: 100,
-        pageIndex: 0,
-        marketsInfoData: marketsResult.markets,
-        tokensData: marketsResult.tokens,
-      });
+      // Fetch all trades with pagination to get complete history
+      let allTrades: any[] = [];
+      let pageIndex = 0;
+      const pageSize = 1000; // Increase page size for efficiency
+      let hasMoreData = true;
 
-      const processedTrades = history.map((trade: any) => {
+      console.log('Fetching complete trading history...');
+
+      while (hasMoreData) {
+        console.log(`Fetching page ${pageIndex + 1}...`);
+        
+        const history = await this.sdk.trades.getTradeHistory({
+          forAllAccounts: false,
+          pageSize: pageSize,
+          pageIndex: pageIndex,
+          marketsInfoData: marketsResult.markets,
+          tokensData: marketsResult.tokens,
+        });
+
+        if (history && history.length > 0) {
+          allTrades.push(...history);
+          pageIndex++;
+          
+          // If we got less than the page size, we've reached the end
+          if (history.length < pageSize) {
+            hasMoreData = false;
+          }
+        } else {
+          hasMoreData = false;
+        }
+
+        // Safety break to prevent infinite loops
+        if (pageIndex > 50) { // Max 50 pages (50k trades)
+          console.warn('Reached maximum page limit, stopping pagination');
+          break;
+        }
+      }
+
+      console.log(`Fetched ${allTrades.length} total trades from ${pageIndex} pages`);
+
+      // Filter to only executed trades at the data processing level for efficiency
+      const executedTrades = allTrades.filter(trade => trade.eventName === 'OrderExecuted');
+      console.log(`Found ${executedTrades.length} executed trades out of ${allTrades.length} total trades`);
+
+      const processedTrades = executedTrades.map((trade: any) => {
+        // Handle timestamp - ensure it's in seconds
+        let finalTimestamp = trade.timestamp || Date.now() / 1000;
+        
+        // If timestamp looks like it's in milliseconds (> year 2100 in seconds), convert to seconds
+        if (finalTimestamp > 4102444800) { // Jan 1, 2100 in seconds
+          finalTimestamp = finalTimestamp / 1000;
+        }
+
         return {
           id: trade.id || `${trade.transaction?.hash}-${Date.now()}`,
           txHash: trade.transaction?.hash,
           blockNumber: trade.transaction?.blockNumber,
-          timestamp: trade.timestamp || Date.now() / 1000,
+          timestamp: finalTimestamp,
           eventName: trade.eventName,
           orderType: trade.orderType,
           orderKey: trade.orderKey,
@@ -211,6 +255,7 @@ export class GmxService {
         };
       });
 
+      console.log(`Processed ${processedTrades.length} executed trades for dashboard`);
       return processedTrades;
     } catch (error) {
       console.error('Failed to fetch trading history:', error);
@@ -235,7 +280,6 @@ export class GmxService {
     }
 
     const executedTrades = trades.filter(trade => 
-      trade.eventName === 'OrderExecuted' && 
       trade.pnlUsd !== undefined && 
       trade.pnlUsd !== 0
     );

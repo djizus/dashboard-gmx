@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { subDays, startOfDay } from 'date-fns';
+import { subDays } from 'date-fns';
 
 export type DateFilterValue = 'all' | '1d' | '7d' | '30d';
 
@@ -46,14 +46,16 @@ export const DateFilterProvider: React.FC<DateFilterProviderProps> = ({ children
     const now = new Date();
     const filterDate = (() => {
       switch (dateFilter) {
-        case '1d': return subDays(now, 1);
-        case '7d': return subDays(now, 7);
-        case '30d': return subDays(now, 30);
+        case '1d': return subDays(now, 1);  // 24 hours ago
+        case '7d': return subDays(now, 7);  // 7 days ago
+        case '30d': return subDays(now, 30); // 30 days ago
         default: return null;
       }
     })();
 
-    return filterDate ? startOfDay(filterDate).getTime() / 1000 : null;
+    // Use exact time (not start of day) for more accurate filtering
+    // For "Last 24h" we want exactly 24 hours ago, not start of yesterday
+    return filterDate ? filterDate.getTime() / 1000 : null;
   };
 
   const getFilterLabel = (): string => {

@@ -31,31 +31,40 @@ const Header: React.FC = () => {
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 sm:h-20 space-y-4 sm:space-y-0">
           <div className="flex items-center">
             <img 
               src={vegaLogo} 
               alt="Vega AI" 
-              className="h-12 w-12 rounded-lg object-cover shadow-sm"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover shadow-sm"
             />
-            <div className="ml-4">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                Vega AI GMX Trading Dashboard
+            <div className="ml-3 sm:ml-4">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                <span className="hidden sm:inline">Vega AI GMX Trading Dashboard</span>
+                <span className="sm:hidden">Vega AI Dashboard</span>
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Built by zKorp • Powered by Daydreams
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                <span className="hidden sm:inline">Built by zKorp • Powered by Daydreams</span>
+                <span className="sm:hidden">zKorp • Daydreams</span>
               </p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <ThemeToggle />
-            <GlobalDateFilter />
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-              <span>Auto-refresh</span>
+            <div className="hidden sm:block">
+              <GlobalDateFilter />
+            </div>
+            <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
+              <span className="hidden sm:inline">Auto-refresh</span>
             </div>
           </div>
+        </div>
+        
+        {/* Mobile Date Filter */}
+        <div className="sm:hidden pb-4">
+          <GlobalDateFilter />
         </div>
       </div>
     </header>
@@ -64,16 +73,40 @@ const Header: React.FC = () => {
 
 const Footer: React.FC = () => {
   const logos = [
-    { src: [zkorpLogoWithBg, zkorpLogo], alt: 'ZKorp', href: 'https://github.com/z-korp', height: 'h-14' },
-    { src: daydreamsLogo, alt: 'Daydreams', href: 'https://github.com/daydreamsai/daydreams', height: 'h-10' },
-    { src: gmxLogo, alt: 'GMX', href: 'https://app.gmx.io/#/trade', height: 'h-10' },
-    { src: [githubLogo, githubLogoWhite], alt: 'GitHub', href: 'https://github.com/djizus/agent-gmx/tree/main', height: 'h-10' },
+    { 
+      src: [zkorpLogoWithBg, zkorpLogo], 
+      alt: 'ZKorp', 
+      href: 'https://github.com/z-korp', 
+      height: 'h-10 sm:h-12 md:h-14',
+      mobileHeight: 'h-8'
+    },
+    { 
+      src: daydreamsLogo, 
+      alt: 'Daydreams', 
+      href: 'https://github.com/daydreamsai/daydreams', 
+      height: 'h-8 sm:h-9 md:h-10',
+      mobileHeight: 'h-6'
+    },
+    { 
+      src: gmxLogo, 
+      alt: 'GMX', 
+      href: 'https://app.gmx.io/#/trade', 
+      height: 'h-8 sm:h-9 md:h-10',
+      mobileHeight: 'h-6'
+    },
+    { 
+      src: [githubLogo, githubLogoWhite], 
+      alt: 'GitHub', 
+      href: 'https://github.com/djizus/agent-gmx/tree/main', 
+      height: 'h-8 sm:h-9 md:h-10',
+      mobileHeight: 'h-6'
+    },
   ];
 
   return (
-    <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-      <div className="w-full py-8">
-        <div className="flex items-center justify-center space-x-12">
+    <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-8 sm:mt-12">
+      <div className="w-full py-6 sm:py-8">
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 md:gap-12 px-4">
           {logos.map((logo) => (
             <a
               key={logo.alt}
