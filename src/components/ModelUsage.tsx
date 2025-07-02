@@ -41,7 +41,7 @@ export const ModelUsage: React.FC = () => {
 
   // Calculate totals
   const totals = data.data.reduce((acc, item) => ({
-    model: acc.model + item.model_permaslug,
+    model: acc.model || item.model_permaslug, // Just take the first model name
     usage: acc.usage + item.usage,
     requests: acc.requests + item.requests,
     promptTokens: acc.promptTokens + item.prompt_tokens,
