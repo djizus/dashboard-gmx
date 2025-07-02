@@ -30,10 +30,10 @@ export const useModelUsage = () => {
       
       const data = await response.json();
       
-      // Filter to only show google/gemini-2.5-flash-preview-05-20
+      // Filter to only show google/gemini-2.5-flash-preview-05-20 or anthropic/claude-4-sonnet-20250522
       if (data.data) {
         data.data = data.data.filter((item: ModelUsageItem) => 
-          item.model_permaslug === 'google/gemini-2.5-flash-preview-05-20'
+          item.model_permaslug === 'anthropic/claude-4-sonnet-20250522'
         );
         
         // Filter data based on the selected date range
