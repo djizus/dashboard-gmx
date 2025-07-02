@@ -89,7 +89,7 @@ export const ModelUsage: React.FC = () => {
           Model
         </div>
         <div className="text-sm font-medium text-gray-900 dark:text-white">
-          Gemini 2.5 Flash Preview
+          Claude 4 Sonnet
         </div>
       </div>
 
