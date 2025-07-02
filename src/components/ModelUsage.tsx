@@ -41,11 +41,12 @@ export const ModelUsage: React.FC = () => {
 
   // Calculate totals
   const totals = data.data.reduce((acc, item) => ({
+    model: acc.model + item.model_permaslug,
     usage: acc.usage + item.usage,
     requests: acc.requests + item.requests,
     promptTokens: acc.promptTokens + item.prompt_tokens,
     completionTokens: acc.completionTokens + item.completion_tokens,
-  }), { usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 });
+  }), { model: '', usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 });
 
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
@@ -89,7 +90,7 @@ export const ModelUsage: React.FC = () => {
           Model
         </div>
         <div className="text-sm font-medium text-gray-900 dark:text-white">
-          Claude 4 Sonnet
+          {totals.model}
         </div>
       </div>
 
