@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
     // Format the cookie properly with __session= prefix
     const cookie = `__session=${sessionToken}`;
 
-    const response = await fetch('https://openrouter.ai/api/frontend/user/transaction-analytics', {
+    const response = await fetch('https://openrouter.ai/api/frontend/user/transaction-analytics?api_key_ids=4974035', {
       method: 'GET',
       headers: {
         'Accept': '*/*',
