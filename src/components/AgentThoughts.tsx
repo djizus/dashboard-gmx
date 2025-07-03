@@ -49,7 +49,7 @@ export const AgentThoughts: React.FC = () => {
   }
 
   const thoughts = data.thoughts || [];
-  const latestThoughts = thoughts.slice(-10).reverse(); // Show last 10 thoughts, most recent first
+  const latestThoughts = thoughts.slice(-20).reverse(); // Show last 20 thoughts, most recent first
 
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 h-full">
