@@ -215,9 +215,13 @@ export class GmxService {
 
       console.log(`Fetched ${allTrades.length} total trades from ${pageIndex} pages`);
 
-      // Filter to only executed trades at the data processing level for efficiency
-      const executedTrades = allTrades.filter(trade => trade.eventName === 'OrderExecuted');
-      console.log(`Found ${executedTrades.length} executed trades out of ${allTrades.length} total trades`);
+      // Filter to only executed trades and exclude swaps (orderType 0 and 1)
+      const executedTrades = allTrades.filter(trade => 
+        trade.eventName === 'OrderExecuted' && 
+        trade.orderType !== 0 && // Market Swap
+        trade.orderType !== 1    // Limit Swap
+      );
+      console.log(`Found ${executedTrades.length} executed trades (excluding swaps) out of ${allTrades.length} total trades`);
 
       const processedTrades = executedTrades.map((trade: any) => {
         // Handle timestamp - ensure it's in seconds
