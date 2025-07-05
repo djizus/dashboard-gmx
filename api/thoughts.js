@@ -1,17 +1,19 @@
-const { MongoClient } = require('mongodb');
+const { createClient } = require('@supabase/supabase-js');
 
-let client = null;
+let supabase = null;
 
-async function getMongoClient() {
-  if (!client) {
-    const mongoUrl = process.env.MONGODB_URL;
-    if (!mongoUrl) {
-      throw new Error('MONGODB_URL environment variable is not set');
+function getSupabaseClient() {
+  if (!supabase) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('SUPABASE_URL and SUPABASE_KEY environment variables are required');
     }
-    client = new MongoClient(mongoUrl);
-    await client.connect();
+    
+    supabase = createClient(supabaseUrl, supabaseKey);
   }
-  return client;
+  return supabase;
 }
 
 module.exports = async function handler(req, res) {
@@ -20,23 +22,32 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const mongoClient = await getMongoClient();
-    const db = mongoClient.db('vega_trading_agent');
-    const collection = db.collection('gmx_memory');
+    const supabaseClient = getSupabaseClient();
     
-    const document = await collection.findOne({ 
-      'value.thoughts.0': { $exists: true }
-    });
+    // Query the gmx_memory table to find records with thoughts array
+    const { data, error } = await supabaseClient
+      .from('gmx_memory')
+      .select('*')
+      .not('value->thoughts', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
     
-    if (!document || !document.value || !document.value.thoughts) {
+    if (error) {
+      console.error('Supabase query error:', error);
+      return res.status(500).json({ error: 'Failed to fetch thoughts from database' });
+    }
+    
+    if (!data || !data.value || !data.value.thoughts) {
       return res.status(404).json({ error: 'No thoughts found' });
     }
     
     return res.status(200).json({ 
-      thoughts: document.value.thoughts,
-      lastUpdated: document.updatedAt || new Date().toISOString()
+      thoughts: data.value.thoughts,
+      lastUpdated: data.updated_at || new Date().toISOString()
     });
   } catch (error) {
+    console.error('Unexpected error:', error);
     const errorResponse = { 
       error: 'Failed to fetch thoughts'
     };
