@@ -247,7 +247,6 @@ export const PerformanceMetrics: React.FC = () => {
             value={formatPercentage(metrics.apy)}
             icon={<Percent className="h-6 w-6" />}
             trend={metrics.apy >= 0 ? 'up' : 'down'}
-            subtitle="Annualized"
           />
           
           <MetricCard
