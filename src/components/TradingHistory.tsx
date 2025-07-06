@@ -213,7 +213,16 @@ export const TradingHistory: React.FC = () => {
                 <div className="col-span-2">
                   <div className="text-xs text-gray-500 dark:text-gray-400">PnL</div>
                   <div className={`font-medium ${pnlColor}`}>
-                    {trade.pnlUsd !== 0 ? formatCurrency(trade.pnlUsd) : '-'}
+                    {trade.pnlUsd !== 0 ? (
+                      <>
+                        {formatCurrency(trade.pnlUsd)}
+                        {(trade.collateralDeltaUsd || trade.sizeDeltaUsd) > 0 && (
+                          <span className="text-xs ml-1">
+                            ({((trade.pnlUsd / (trade.collateralDeltaUsd || trade.sizeDeltaUsd / 5)) * 100).toFixed(1)}%)
+                          </span>
+                        )}
+                      </>
+                    ) : '-'}
                   </div>
                 </div>
               </div>
@@ -284,7 +293,16 @@ export const TradingHistory: React.FC = () => {
                   </td>
                   <td className="px-3 py-3 whitespace-nowrap">
                     <div className={`text-sm font-medium ${pnlColor} flex items-center`}>
-                      {trade.pnlUsd !== 0 ? formatCurrency(trade.pnlUsd) : '-'}
+                      {trade.pnlUsd !== 0 ? (
+                        <>
+                          {formatCurrency(trade.pnlUsd)}
+                          {(trade.collateralDeltaUsd || trade.sizeDeltaUsd) > 0 && (
+                            <span className="text-xs ml-1">
+                              ({((trade.pnlUsd / (trade.collateralDeltaUsd || trade.sizeDeltaUsd / 5)) * 100).toFixed(1)}%)
+                            </span>
+                          )}
+                        </>
+                      ) : '-'}
                       {trade.txHash && (
                         <a
                           href={`https://arbiscan.io/tx/${trade.txHash}`}

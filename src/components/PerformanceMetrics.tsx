@@ -87,6 +87,7 @@ export const PerformanceMetrics: React.FC = () => {
         largestWin: 0,
         largestLoss: 0,
         roi: 0,
+        apy: 0,
       };
     }
 
@@ -103,11 +104,39 @@ export const PerformanceMetrics: React.FC = () => {
     const largestWin = winningTrades.length > 0 ? Math.max(...winningTrades.map(t => t.pnlUsd)) : 0;
     const largestLoss = losingTrades.length > 0 ? Math.min(...losingTrades.map(t => t.pnlUsd)) : 0;
     
-    // Calculate total invested amount (sum of all trade sizes)
-    const totalInvested = executedTrades.reduce((sum, trade) => sum + (trade.sizeDeltaUsd || 0), 0);
+    // Calculate total invested amount (sum of all collateral amounts)
+    // For leveraged trades, ROI should be based on actual capital deployed (collateral), not position size
+    const totalInvested = executedTrades.reduce((sum, trade) => {
+      // Use actual collateralDeltaUsd if available, otherwise fallback to size/leverage estimate
+      const collateralAmount = trade.collateralDeltaUsd || (trade.sizeDeltaUsd / 5);
+      return sum + Math.abs(collateralAmount);
+    }, 0);
     
     // Calculate ROI as (Total PnL / Total Invested) * 100
     const roi = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+
+    // Calculate APY (Annualized Percentage Yield)
+    let apy = 0;
+    if (totalInvested > 0 && executedTrades.length > 0) {
+      // Get time period in days
+      const firstTradeTime = Math.min(...executedTrades.map(t => t.timestamp));
+      const lastTradeTime = Math.max(...executedTrades.map(t => t.timestamp));
+      const timePeriodSeconds = lastTradeTime - firstTradeTime;
+      const timePeriodDays = timePeriodSeconds / 86400; // Convert to days
+      
+      // If period is less than 1 day, use 1 day minimum for calculation
+      const periodDays = Math.max(timePeriodDays, 1);
+      
+      // Calculate annualized return
+      // APY = ((1 + ROI/100)^(365/days) - 1) * 100
+      const returnRate = 1 + (roi / 100);
+      const annualizationFactor = 365 / periodDays;
+      apy = (Math.pow(returnRate, annualizationFactor) - 1) * 100;
+      
+      // Cap extreme values for display
+      if (apy > 10000) apy = 10000; // Cap at 10,000% APY
+      if (apy < -99) apy = -99; // Cap at -99% APY
+    }
 
     return {
       totalPnl,
@@ -120,6 +149,7 @@ export const PerformanceMetrics: React.FC = () => {
       largestWin,
       largestLoss,
       roi,
+      apy,
     };
   }, [trades, dateFilter, getFilterTimestamp]);
 
@@ -213,10 +243,11 @@ export const PerformanceMetrics: React.FC = () => {
           />
           
           <MetricCard
-            title="ROI"
-            value={formatPercentage(metrics.roi)}
+            title="APY"
+            value={formatPercentage(metrics.apy)}
             icon={<Percent className="h-6 w-6" />}
-            trend={metrics.roi >= 0 ? 'up' : 'down'}
+            trend={metrics.apy >= 0 ? 'up' : 'down'}
+            subtitle="Annualized"
           />
           
           <MetricCard

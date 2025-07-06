@@ -1,5 +1,5 @@
 import { GmxSdk } from '@gmx-io/sdk';
-import { bigIntToDecimal, USD_DECIMALS } from './utils';
+import { bigIntToDecimal, USD_DECIMALS, convertToUsd } from './utils';
 
 export class GmxService {
   private sdk: GmxSdk;
@@ -75,14 +75,18 @@ export class GmxService {
         let calculatedPnl = rawPnl;
         let calculatedPnlPercentage = rawPnlPercentage;
         
+        const collateralUsd = position.collateralUsd ? bigIntToDecimal(position.collateralUsd, USD_DECIMALS) : 0;
+        
         if (entryPrice > 0 && currentMarkPrice > 0 && sizeInUsd > 0) {
           const priceChange = currentMarkPrice - entryPrice;
-          const priceChangePercentage = (priceChange / entryPrice) * 100;
           
           // For shorts, PnL is inverted (profit when price goes down)
           const directionMultiplier = position.isLong ? 1 : -1;
           const manualPnl = (priceChange / entryPrice) * sizeInUsd * directionMultiplier;
-          const manualPnlPercentage = priceChangePercentage * directionMultiplier;
+          
+          // Calculate PnL percentage based on collateral, not position size
+          // This gives the true return on invested capital
+          const manualPnlPercentage = collateralUsd > 0 ? (manualPnl / collateralUsd) * 100 : 0;
           
           // Always use manual calculation since SDK values are clearly wrong
           calculatedPnl = manualPnl;
@@ -99,7 +103,7 @@ export class GmxService {
           sizeInUsd: sizeInUsd,
           sizeInTokens: position.sizeInTokens ? bigIntToDecimal(position.sizeInTokens, position.indexToken?.decimals || 18) : 0,
           collateralAmount: position.collateralAmount ? bigIntToDecimal(position.collateralAmount, position.collateralToken?.decimals || 18) : 0,
-          collateralUsd: position.collateralUsd ? bigIntToDecimal(position.collateralUsd, USD_DECIMALS) : 0,
+          collateralUsd: collateralUsd,
           markPrice: currentMarkPrice,
           entryPrice: entryPrice,
           unrealizedPnl: calculatedPnl,
@@ -232,6 +236,25 @@ export class GmxService {
           finalTimestamp = finalTimestamp / 1000;
         }
 
+        // Calculate collateralDeltaUsd from the raw amount
+        let collateralDeltaUsd = 0;
+        if (trade.initialCollateralDeltaAmount && trade.initialCollateralToken) {
+          // Use the execution price if available, otherwise use current token price
+          const collateralPrice = trade.collateralTokenPriceMax || 
+                                trade.collateralTokenPriceMin || 
+                                trade.initialCollateralToken?.prices?.maxPrice ||
+                                trade.initialCollateralToken?.prices?.minPrice;
+          
+          if (collateralPrice) {
+            const collateralUsdBigInt = convertToUsd(
+              trade.initialCollateralDeltaAmount,
+              trade.initialCollateralToken.decimals || 18,
+              collateralPrice
+            );
+            collateralDeltaUsd = collateralUsdBigInt ? bigIntToDecimal(collateralUsdBigInt, USD_DECIMALS) : 0;
+          }
+        }
+
         return {
           id: trade.id || `${trade.transaction?.hash}-${Date.now()}`,
           txHash: trade.transaction?.hash,
@@ -245,6 +268,7 @@ export class GmxService {
           isLong: trade.isLong,
           sizeDeltaUsd: trade.sizeDeltaUsd ? bigIntToDecimal(trade.sizeDeltaUsd, USD_DECIMALS) : 0,
           collateralDeltaAmount: trade.initialCollateralDeltaAmount,
+          collateralDeltaUsd: collateralDeltaUsd,
           triggerPrice: trade.triggerPrice && trade.triggerPrice !== 0n ? bigIntToDecimal(trade.triggerPrice, USD_DECIMALS) : 0,
           acceptablePrice: trade.acceptablePrice ? bigIntToDecimal(trade.acceptablePrice, USD_DECIMALS) : 0,
           executionPrice: trade.executionPrice ? bigIntToDecimal(trade.executionPrice, USD_DECIMALS) : 0,
