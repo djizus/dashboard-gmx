@@ -36,11 +36,11 @@ export const AgentThoughts: React.FC = () => {
         <div className="space-y-2">
           <div className="flex items-center text-yellow-600 dark:text-yellow-400">
             <AlertCircle className="h-5 w-5 mr-2" />
-            <p className="text-sm">Unable to load thoughts at this time</p>
+            <p className="text-sm">Agent maintenance in progress</p>
           </div>
           {error && (
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              <p>Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
+              <p>Thoughts service temporarily unavailable</p>
             </div>
           )}
         </div>
