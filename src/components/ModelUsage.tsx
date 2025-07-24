@@ -1,16 +1,9 @@
 import React from 'react';
 import { Bot, TrendingUp, Coins, AlertCircle } from 'lucide-react';
 import { useModelUsage } from '../hooks/useModelUsage';
-import { useAnthropicUsage } from '../hooks/useAnthropicUsage';
 
 export const ModelUsage: React.FC = () => {
-  const { data: openRouterData, isLoading: openRouterLoading, error: openRouterError } = useModelUsage();
-  const { data: anthropicData, isLoading: anthropicLoading, error: anthropicError } = useAnthropicUsage();
-  
-  const isLoading = openRouterLoading || anthropicLoading;
-  const error = openRouterError || anthropicError;
-  const hasOpenRouterData = openRouterData && openRouterData.data && openRouterData.data.length > 0;
-  const hasAnthropicData = anthropicData && anthropicData.length > 0;
+  const { data, isLoading, error } = useModelUsage();
 
   if (isLoading) {
     return (
@@ -29,7 +22,7 @@ export const ModelUsage: React.FC = () => {
     );
   }
 
-  if (error || (!hasOpenRouterData && !hasAnthropicData)) {
+  if (error || !data) {
     return (
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
         <div className="flex items-center mb-4">
@@ -46,36 +39,16 @@ export const ModelUsage: React.FC = () => {
     );
   }
 
-  // Calculate OpenRouter totals
-  const openRouterTotals = hasOpenRouterData ? openRouterData.data.reduce((acc, item) => ({
+  // Calculate totals
+  const totals = data.data.reduce((acc, item) => ({
+    model: acc.model || item.model_permaslug,
     usage: acc.usage + item.usage,
     requests: acc.requests + item.requests,
     promptTokens: acc.promptTokens + item.prompt_tokens,
     completionTokens: acc.completionTokens + item.completion_tokens,
-  }), { usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 }) : 
-    { usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 };
+  }), { model: '', usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 });
 
-  // Calculate Anthropic totals
-  const anthropicTotals = hasAnthropicData ? anthropicData.reduce((acc, item) => ({
-    usage: acc.usage + item.cost,
-    requests: acc.requests + item.requests,
-    promptTokens: acc.promptTokens + item.input_tokens,
-    completionTokens: acc.completionTokens + item.output_tokens,
-  }), { usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 }) :
-    { usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 };
-
-  // Combined totals
-  const totalCost = openRouterTotals.usage + anthropicTotals.usage;
-  const totalRequests = openRouterTotals.requests + anthropicTotals.requests;
-  const totalPromptTokens = openRouterTotals.promptTokens + anthropicTotals.promptTokens;
-  const totalCompletionTokens = openRouterTotals.completionTokens + anthropicTotals.completionTokens;
-  const totalTokens = totalPromptTokens + totalCompletionTokens;
-
-  // Calculate days of data
-  const totalDays = Math.max(
-    hasOpenRouterData ? openRouterData.data.length : 0,
-    hasAnthropicData ? anthropicData.length : 0
-  );
+  const totalTokens = totals.promptTokens + totals.completionTokens;
 
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
@@ -87,8 +60,7 @@ export const ModelUsage: React.FC = () => {
           </h3>
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400">
-          {hasOpenRouterData && hasAnthropicData ? 'OpenRouter + Anthropic' : 
-           hasOpenRouterData ? 'OpenRouter' : 'Anthropic'}
+          OpenRouter
         </div>
       </div>
       
@@ -100,7 +72,7 @@ export const ModelUsage: React.FC = () => {
             Total Cost
           </div>
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            ${totalCost.toFixed(2)}
+            ${totals.usage.toFixed(2)}
           </div>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700 rounded p-3">
@@ -109,8 +81,18 @@ export const ModelUsage: React.FC = () => {
             Total Requests
           </div>
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {totalRequests.toLocaleString()}
+            {totals.requests.toLocaleString()}
           </div>
+        </div>
+      </div>
+
+      {/* Model Info */}
+      <div className="bg-gray-50 dark:bg-gray-700 rounded p-3 mb-4">
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+          Model
+        </div>
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
+          {totals.model}
         </div>
       </div>
 
@@ -123,13 +105,13 @@ export const ModelUsage: React.FC = () => {
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-700 dark:text-gray-300">Input Tokens:</span>
             <span className="text-sm font-medium text-gray-900 dark:text-white">
-              {(totalPromptTokens / 1000000).toFixed(1)}M
+              {(totals.promptTokens / 1000000).toFixed(1)}M
             </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-700 dark:text-gray-300">Output Tokens:</span>
             <span className="text-sm font-medium text-gray-900 dark:text-white">
-              {(totalCompletionTokens / 1000000).toFixed(1)}M
+              {(totals.completionTokens / 1000000).toFixed(1)}M
             </span>
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-600">
@@ -142,19 +124,19 @@ export const ModelUsage: React.FC = () => {
       </div>
 
       {/* Cost Breakdown */}
-      {totalDays > 0 && (
+      {data.data.length > 0 && (
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
               <span className="text-gray-500 dark:text-gray-400">Avg Daily Cost:</span>
               <span className="ml-2 text-gray-700 dark:text-gray-300">
-                ${(totalCost / totalDays).toFixed(2)}
+                ${(totals.usage / data.data.length).toFixed(2)}
               </span>
             </div>
             <div>
               <span className="text-gray-500 dark:text-gray-400">Cost per 1M tokens:</span>
               <span className="ml-2 text-gray-700 dark:text-gray-300">
-                ${totalTokens > 0 ? ((totalCost / totalTokens) * 1000000).toFixed(2) : '0.00'}
+                ${totalTokens > 0 ? ((totals.usage / totalTokens) * 1000000).toFixed(2) : '0.00'}
               </span>
             </div>
           </div>
