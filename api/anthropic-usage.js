@@ -8,6 +8,7 @@ module.exports = async function handler(req, res) {
     const sessionKey = process.env.ANTHROPIC_SESSION_KEY;
     const deviceId = process.env.ANTHROPIC_DEVICE_ID;
     const anonymousId = process.env.ANTHROPIC_ANONYMOUS_ID;
+    const ssid = process.env.ANTHROPIC_SSID || '3d2c960bcf7105e362bd85505f3e44f';
     
     if (!orgId || !sessionKey || !deviceId || !anonymousId) {
       throw new Error('Missing required Anthropic environment variables');
@@ -34,7 +35,7 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json',
         'Referer': 'https://console.anthropic.com/usage',
         'Origin': 'https://console.anthropic.com',
-        'Cookie': `sessionKey=${sessionKey}; anthropic-device-id=${deviceId}; lastActiveOrg=${orgId}`
+        'Cookie': `sessionKey=${sessionKey}; __ssid=${ssid}; anthropic-device-id=${deviceId}; lastActiveOrg=${orgId}`
       }
     });
 
