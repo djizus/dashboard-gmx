@@ -39,14 +39,14 @@ export const ModelUsage: React.FC = () => {
     );
   }
 
-  // Calculate totals
+  // Calculate totals (including $36 for Anthropic Console usage)
   const totals = data.data.reduce((acc, item) => ({
     model: acc.model || item.model_permaslug,
     usage: acc.usage + item.usage,
     requests: acc.requests + item.requests,
     promptTokens: acc.promptTokens + item.prompt_tokens,
     completionTokens: acc.completionTokens + item.completion_tokens,
-  }), { model: '', usage: 0, requests: 0, promptTokens: 0, completionTokens: 0 });
+  }), { model: '', usage: 36, requests: 0, promptTokens: 0, completionTokens: 0 });
 
   const totalTokens = totals.promptTokens + totals.completionTokens;
 
@@ -60,7 +60,7 @@ export const ModelUsage: React.FC = () => {
           </h3>
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400">
-          OpenRouter
+          OpenRouter + Console
         </div>
       </div>
       
