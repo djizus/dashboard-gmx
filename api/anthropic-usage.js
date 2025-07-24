@@ -22,28 +22,26 @@ module.exports = async function handler(req, res) {
 
     const response = await fetch(url, {
       method: 'GET',
-      credentials: 'include',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0',
         'Accept': '*/*',
-        'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
+        'Accept-Language': 'en-US,en;q=0.9',
         'anthropic-client-sha': '787b6872f2c198223570e0508bf88b6f136d9d06',
         'anthropic-client-version': '1',
         'anthropic-client-platform': 'web_console',
         'anthropic-anonymous-id': anonymousId,
         'anthropic-device-id': deviceId,
         'Content-Type': 'application/json',
-        'Alt-Used': 'console.anthropic.com',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin',
-        'Priority': 'u=4',
-        'Cookie': `sessionKey=${sessionKey}`
+        'Referer': 'https://console.anthropic.com/usage',
+        'Origin': 'https://console.anthropic.com',
+        'Cookie': `sessionKey=${sessionKey}; anthropic-device-id=${deviceId}; lastActiveOrg=${orgId}`
       }
     });
 
     if (!response.ok) {
-      throw new Error(`Anthropic API returned ${response.status}: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(`Anthropic API Error ${response.status}:`, errorText);
+      throw new Error(`Anthropic API returned ${response.status}: ${response.statusText}. Response: ${errorText}`);
     }
 
     const data = await response.json();
